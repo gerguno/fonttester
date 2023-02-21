@@ -1,9 +1,20 @@
 import React, { useEffect, useState, useRef } from "react";
 import typefacesJSON from './typefaces.json'
 import './fontTester.css'
+import opentype from 'opentype.js'
+import Base64Binary from "./base64-binary";
+
+let typefaces = [...typefacesJSON.data.typefaces]
+
+// Load fonts
+typefaces.map((t) => {
+  t.fonts.map((f, i) => {
+      const fontFace = new FontFace(`${t.title} ${f.fontTitle.slice(f.fontTitle.indexOf(' ') + 1)}`, `url(data:application/octet-stream;base64,${f.base64})`);
+      document.fonts.add(fontFace);
+  })
+})
 
 export default function FontTester() {
-  const typefaces = [...typefacesJSON.data.typefaces]
   const [typeface, setTypeface] = useState(typefaces[0]);
   const [style, setStyle] = useState(typeface.fonts[0].fontTitle.slice(typeface.fonts[0].fontTitle.indexOf(' ') + 1))
   const [showFontStyles, setShowFontStyles] = useState(false)
@@ -68,20 +79,46 @@ export default function FontTester() {
   }
 
   useEffect(() => {
-    // Load fonts
-    
-    typefaces.map((t) => {
-      t.fonts.map((f, i) => {
-          const fontFace = new FontFace(`${t.title} ${f.fontTitle.slice(f.fontTitle.indexOf(' ') + 1)}`, `url(data:application/octet-stream;base64,${f.base64})`);
-          document.fonts.add(fontFace);
-          fontFace.load().then(() => {
-            const fontFeatures = document.fonts.values();
-            console.log(fontFeatures);
-          }).catch(() => {
-            console.error('Error loading font');
-          });
-      })
-    })
+    // Add font features data from base64s to typefaces array 
+    // Base64 Must be of WOFF, not WOFF2
+    // Use this https://www.giftofspeed.com/base64-encoder
+
+    for (let i=0; i < typefaces.length; i++) {
+      async function parse() {
+        const font = await opentype.parse(Base64Binary.decodeArrayBuffer(typefaces[i].fonts[0].base64))
+        const features = [...Array.from(new Set(font.tables.gsub.features.map((f) => f.tag)))].map(tag => ({tag}))
+        
+        // Names 256-32767
+        let fontNames = []
+        let counter = 0
+
+        if (font.names.hasOwnProperty('256')) {
+
+        for (let key in font.names) {
+            if (/^\d+$/.test(key)) {
+              for (let n in font.names[key]) {
+                fontNames.push(font.names[key][n])
+              }
+            }
+          }
+        }
+
+        if (fontNames.length > 0) {
+          for (let i=0; i < features.length; i++) {
+            if (features[i].tag.includes('ss')) {
+              features[i]['name'] = fontNames[counter]
+              counter++
+            }
+          }
+        }
+        
+        typefaces[i]['opentypeFeatures'] = features
+      }
+
+      parse()
+    }
+
+    console.log(typefaces)
   }, []);
 
   useEffect(() => {
