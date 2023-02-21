@@ -1,0 +1,55 @@
+/* Import KTF Jermilov Solid */
+@font-face {
+    font-family: 'KTF Jermilov Solid';
+    font-display: fallback;
+    src: url('../fonts/KTF\ Jermilov/Solid/KTFJermilov-Solid.eot'),
+         url('../fonts/KTF\ Jermilov/Solid/KTFJermilov-Solid.woff2') format('woff2'),
+         url('../fonts/KTF\ Jermilov/Solid/KTFJermilov-Solid.woff') format('woff'),
+         url('../fonts/KTF\ Jermilov/Solid/KTFJermilov-Solid.otf') format('opentype'),
+         url('../fonts/KTF\ Jermilov/Solid/KTFJermilov-Solid.ttf') format('truetype');
+  }
+  
+  /* Import KTF Jermilov Stencil */
+  @font-face {
+    font-family: 'KTF Jermilov Stencil';
+    font-display: fallback;
+    src: url('../fonts/KTF\ Jermilov/Stencil/KTFJermilov-Stencil.eot'),
+         url('../fonts/KTF\ Jermilov/Stencil/KTFJermilov-Stencil.woff2') format('woff2'),
+         url('../fonts/KTF\ Jermilov/Stencil/KTFJermilov-Stencil.woff') format('woff'),
+         url('../fonts/KTF\ Jermilov/Stencil/KTFJermilov-Stencil.otf') format('opentype'),
+         url('../fonts/KTF\ Jermilov/Stencil/KTFJermilov-Stencil.ttf') format('truetype');
+  }
+  
+  /* Import KTF Compact */
+  @font-face {
+    font-family: 'KTF Compact Black';
+    font-display: fallback;
+    src: url('../fonts/KTF\ Compact/KTFCompact-Black.eot'),
+         url('../fonts/KTF\ Compact/KTFCompact-Black.woff2') format('woff2'),
+         url('../fonts/KTF\ Compact/KTFCompact-Black.woff') format('woff'),
+         url('../fonts/KTF\ Compact/KTFCompact-Black.otf') format('opentype'),
+         url('../fonts/KTF\ Compact/KTFCompact-Black.ttf') format('truetype');
+  }
+  
+  /* Import KTF Rublena */
+  @font-face {
+    font-family: 'KTF Rublena Black';
+    font-display: fallback;
+    src: url('../fonts/KTF\ Rublena/KTFRublena-Black.eot'),
+         url('../fonts/KTF\ Rublena/KTFRublena-Black.woff2') format('woff2'),
+         url('../fonts/KTF\ Rublena/KTFRublena-Black.woff') format('woff'),
+         url('../fonts/KTF\ Rublena/KTFRublena-Black.otf') format('opentype'),
+         url('../fonts/KTF\ Rublena/KTFRublena-Black.ttf') format('truetype');
+  }
+  
+
+/* Dummy Ekran */
+@font-face {
+    font-family: 'KTF Ekran Bold';
+    font-display: fallback;
+    src: url('../fonts/KTF\ Ekran//KTFEkran-Bold.eot'),
+    url('../fonts/KTF\ Ekran//KTFEkran-Bold.woff2') format('woff2'),
+    url('../fonts/KTF\ Ekran//KTFEkran-Bold.woff') format('woff'),
+    url('../fonts/KTF\ Ekran//KTFEkran-Bold.eot') format('opentype'),
+    url('../fonts/KTF\ Ekran//KTFEkran-Bold.ttf') format('truetype');
+}
