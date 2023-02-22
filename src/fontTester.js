@@ -26,11 +26,17 @@ export default function FontTester() {
   const [verticalCenter, setVerticalCenter] = useState(false);
   const [showControls, setShowControls] = useState(false);
   const [mouseOverControls, setMouseOverControls] = useState(false)
+  const [selectedFeatures, setSelectedFeatures] = useState([])
   const timerRef = useRef(null);
 
   const handleTypefaceChange = (event) => {
     const foundT = typefaces.find(foundT => foundT.title === event.target.value);
     setTypeface(foundT);
+    setSelectedFeatures([])
+    let inputs = document.querySelectorAll('.otf-checkbox');
+    for (let i = 0; i < inputs.length; i++) {
+      inputs[i].checked = false;
+    }
   };
 
   const handleStyleChange = (event) => {
@@ -69,13 +75,24 @@ export default function FontTester() {
     setMouseOverControls(false);
   };
 
+  const handleCheckboxChange = (event) => {
+    const item = event.target.value;
+    const isChecked = event.target.checked;
+    if (isChecked) {
+      setSelectedFeatures([...selectedFeatures, item]);
+    } else {
+      setSelectedFeatures(selectedFeatures.filter((value) => value !== item));
+    }
+  }
+
   const textStyle = {
     fontFamily: `${typeface.title} ${style}`,
     fontSize: `${fontSize}px`,
     letterSpacing: `${letterSpacing}em`,
     lineHeight: lineHeight,
     textTransform: `${uppercase ? `uppercase` : `none`}`,
-    textAlign: `${alignment}`
+    textAlign: `${alignment}`,
+    fontFeatureSettings: selectedFeatures.map((s) => `"${s}"`).join(', ')
   }
 
   useEffect(() => {
@@ -111,7 +128,7 @@ export default function FontTester() {
             }
           }
         }
-        
+
         typefaces[i]['opentypeFeatures'] = features
       }
 
@@ -168,6 +185,10 @@ export default function FontTester() {
     };
   }, [mouseOverControls]);
 
+  useEffect(() => {
+    console.log(selectedFeatures)
+  }, [selectedFeatures])
+
   return (
     <div>
         <div id="controls"
@@ -176,7 +197,6 @@ export default function FontTester() {
             style={{
             display: `${showControls ? `block` : `none`}`,
             width: '360px',
-            height: '360px',
             borderRadius: '4px',
             backgroundColor: 'rgba(217, 217, 217, 0.95)',
             backdropFilter: 'blur(60px)',
@@ -278,6 +298,21 @@ export default function FontTester() {
                 {verticalCenter ? '[•]' : '[⌜]' }
               </a>
             </div>
+            {
+             typeface.opentypeFeatures ? (
+              <div>
+                OpenType features:
+                <br/>
+                  {typeface.opentypeFeatures.map((opf, id) => (
+                    <label key={id}>
+                      <input type="checkbox" class="otf-checkbox" value={opf.tag} onChange={handleCheckboxChange}/>
+                      {opf.tag} {(opf.name) && opf.name} <br/>
+                    </label>
+                  ))}
+              </div>
+             ) : <></> 
+            }
+
       </div>
       <div style={{
         display: `${verticalCenter ? `flex` : `block`}`,
