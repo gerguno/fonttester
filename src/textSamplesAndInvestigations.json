@@ -1,0 +1,48 @@
+{
+  "data": {
+    "textSamples": [
+      {
+        "name": "Cyrillic",
+        "text": "Cyrillic"
+      },
+      {
+        "name": "Latin",
+        "text": "Latin"
+      },
+      {
+        "name": "Time zones",
+        "text": "Time zones"
+      },
+      {
+        "name": "Ukrainian brands",
+        "text": "Rozetka, Фокстрот, Нова Пошта"
+      },
+      {
+        "name": "Kyiv metro stations",
+        "text": "Майдан Незалежності, Поштова площа, Контрактова площа"
+      }
+    ],
+    "investigations": [
+      {
+        "name": "nonoHOHOH",
+        "text": "nonoHOHOH"
+      },
+      {
+        "name": "Kerning",
+        "text": "Kerning"
+      },
+      {
+        "name": "Troublemakers",
+        "text": "Troublemakers"
+      },
+      {
+        "name": "ISO-1951",
+        "text": "ISO-1951"
+      },
+      {
+        "name": "Accented letters",
+        "text": "Accented letters"
+      }
+    ]
+  }
+}

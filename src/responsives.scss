@@ -1,0 +1,53 @@
+// Iphone 5SE
+$screen-xs-min: 320px;
+
+// Small tablets and large smartphones (landscape view)
+$screen-s-min: 576px;
+
+// Small tablets (portrait view)
+$screen-m-min: 768px;
+
+// Tablets and small desktops
+$screen-l-min: 992px;
+
+// Large tablets and desktops
+$screen-xl-min: 1366px;
+
+@mixin xs {
+  @media (min-width: #{$screen-xs-min}) {
+    @content;
+  }
+}
+
+@mixin s {
+  @media (min-width: #{$screen-s-min}) {
+    @content;
+  }
+}
+
+// Medium devices
+@mixin m {
+  @media (min-width: #{$screen-m-min}) {
+    @content;
+  }
+}
+
+// Large devices
+@mixin l {
+  @media (min-width: #{$screen-l-min}) {
+    @content;
+  }
+}
+
+// Extra large devices
+@mixin xl {
+  @media (min-width: #{$screen-xl-min}) {
+    @content;
+  }
+}
+
+@mixin rwd($screen) {
+  @media (min-width: $screen+'px') {
+    @content;
+  }
+}
