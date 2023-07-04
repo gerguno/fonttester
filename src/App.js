@@ -1,11 +1,9 @@
-import './App.css';
 import './fonts.css'
 import './fontTester.scss'
 import FontTester from './fontTester';
 import React, { Fragment, useEffect, useState } from "react";
 // import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
 import { request } from 'graphql-request';
-import { type } from '@testing-library/user-event/dist/type';
 import opentype from 'opentype.js'
 import Base64Binary from "./base64-binary";
 

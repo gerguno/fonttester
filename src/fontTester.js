@@ -5,9 +5,12 @@ import opentype from 'opentype.js'
 import Base64Binary from "./base64-binary";
 import { useQueryState } from "./useQueryState"
 import { Buy } from "./buy";
+import useWindowDimensions from "./useWindowDimensions"
 
 let textSamplesJSON = [...textSamplesAndInvestigationsJSON.data.textSamples]
 let investigationsJSON = [...textSamplesAndInvestigationsJSON.data.investigations]
+let dTJSON = textSamplesAndInvestigationsJSON.data.defaultText
+
 
 export default function FontTester({typefaces}) {
   const [f, setF] = useQueryState('f')
@@ -28,7 +31,7 @@ export default function FontTester({typefaces}) {
   const [selectedFeatures, setSelectedFeatures] = useState([])
   const [background, setBackground] = useState('b&w')
   const timerRef = useRef(null);
-  const [sampleText, setSampleText] = useState(['The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.'])
+  const [sampleText, setSampleText] = useState([dTJSON])
   const [textSamplesCat, setTextSamplesCat] = useState([
     {
       name: 'Text samples',
@@ -39,6 +42,8 @@ export default function FontTester({typefaces}) {
       status: 'default',
     }
   ])
+
+  const { height, width } = useWindowDimensions();
     
   const handleTypefaceChange = (event) => {
     const foundT = typefaces.find(foundT => foundT.title === event.target.value);
@@ -137,6 +142,10 @@ export default function FontTester({typefaces}) {
     setSampleText(text)
   }
 
+  const toggleControls = () => {
+    (showControls === true) ? setShowControls(false) : setShowControls(true)
+  }
+
   const universalControls = (
     <> 
       <div id="font-sliders">
@@ -233,28 +242,24 @@ export default function FontTester({typefaces}) {
   </>)
 
   const textSamples = (
-    <div>
-      <div>
-        <button onClick={handleTextSamplesCat}>
+    <div id="text-samples">
+      <div class="text-samples-selector">
+        <a className="toggle-text max" onClick={handleTextSamplesCat}>
           <span className={(textSamplesCat[0].status === "default") ? "grey-text" : ""}>{textSamplesCat[0].name}</span>&nbsp;
           <span className={(textSamplesCat[1].status === "default") ? "grey-text" : ""}>{textSamplesCat[1].name}</span>
-        </button>
+        </a>
       </div>
-      <div className="text-samples">
+      <div className="text-samples-list">
         {(textSamplesCat[0].status === "active") 
           ? 
             textSamplesDATA.map(ts => {
               return (
-                <div>
-                  <a onClick={() => handleChangeText(ts.text)}>{ts.name}</a> <br/>
-                </div>
+                <a onClick={() => handleChangeText(ts.text)} dangerouslySetInnerHTML={{ __html: ts.name }}/>
             )})
           : 
             investigationsDATA.map(inv => {
               return (
-                <div>
-                  <a onClick={() => handleChangeText(inv.text)}>{inv.name}</a> <br/>
-                </div>
+                <a onClick={() => handleChangeText(inv.text)}>{inv.name}</a>
             )})
         }
       </div>
@@ -305,7 +310,7 @@ export default function FontTester({typefaces}) {
   //     clearTimeout(timerRef.current);
   //     timerRef.current = setTimeout(() => {
   //       setShowControls(false);
-  //     }, 1000); // 1 second delay before hiding the component
+  //     }, 750); // 1 second delay before hiding the component
   //   }
 
   //   function handleMouseLeave() {
@@ -329,7 +334,7 @@ export default function FontTester({typefaces}) {
     else if (background === 'w&b') {
       document.body.style.background = 'black'
       document.body.style.color = 'white'
-      document.getElementById('controls').style.color = 'black'
+      document.querySelector('.controls').style.color = 'black'
     } 
     else if (background === 'img') {
       document.body.style.background = 'url(kvas-people.jpg)'
@@ -355,17 +360,28 @@ export default function FontTester({typefaces}) {
 
   return (
     <div>
-        <div id="controls"
+      {width < 576 &&
+        <div className="open-controls">
+          <a onClick={toggleControls}>
+            <img src="more.png" witdh="24px" height="24px"/>
+          </a>
+        </div>
+      }
+        <div className={`controls ${showControls ? `toggleIn` : `toggleOut`}`}
+            onMouseEnter={handleMouseOverControls} 
+            onMouseLeave={handleMouseLeaveControls}
+        >
+        {/* <div id="controls"
             onMouseEnter={handleMouseOverControls} 
             onMouseLeave={handleMouseLeaveControls}
             style={{
             display: `${showControls ? `block` : `none`}`,
-        }}>
+        }}> */}
             <div className="title">
               KTF typesetter V 1.0
             </div>
             <div id="controls-container">
-              <div className="font-selectors">
+              <div id="font-selectors">
                   <label>
                   <select className="dropdown" value={typeface.title} onChange={handleTypefaceChange}>
                       {typefaces.map((t, id) => (
@@ -386,20 +402,34 @@ export default function FontTester({typefaces}) {
             {universalControls}
             {
               typeface.opentypeFeatures ? (
-                <div>
-                  OpenType features:
-                  <br/>
+                <div id="opentype">
+                  <div className="opentype-caption">
+                    Opentype features
+                  </div>
+                  <div className="opentype-checkboxes">
                     {typeface.opentypeFeatures.map((opf, id) => (
-                      <label key={id}>
-                        <input type="checkbox" className="otf-checkbox" value={opf.tag} onChange={handleCheckboxChange}/>
-                        {opf.tag} {(opf.name) && opf.name} <br/>
-                      </label>
+                        <label key={id}>
+                          <input type="checkbox" className="otf-checkbox" value={opf.tag} onChange={handleCheckboxChange}/>
+                           <span className="opentype-label">{opf.tag} {(opf.name) && opf.name} <br/></span> 
+                          <span class="checkmark"></span>
+                        </label>
                     ))}
+                  </div>
                 </div>
               ) : <></> 
             }
             {textSamples}
-            <Buy slug={typeface.slug}/>
+            <div id="spacer"></div>
+
+            <div className="buy-button"> 
+              <Buy slug={typeface.slug}/>
+              {width < 576 &&
+                <a class="close-controls" onClick={toggleControls}>
+                  <img src="close.png" witdh="10px" height="10px"/>
+                </a> 
+              }
+            </div>
+            
           </div>      
       </div>
 

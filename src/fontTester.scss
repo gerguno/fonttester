@@ -2,6 +2,9 @@
 
 html {
     -webkit-text-size-adjust: 100%;
+    // * {
+    //   color: #000;
+    // }
 }
 
 body {
@@ -74,8 +77,7 @@ a {
     color: #696969;
 }
 
-#controls {
-  height: 792px;
+.controls {
   width: 273px;
   max-height: 100vh;
   background-color: #D9D9D9;
@@ -85,6 +87,15 @@ a {
   padding: 37px 25px 25px 25px; 
   font-size: 14px;
   overflow-y: scroll;
+  color: black;
+
+  @include xs {
+    height: 50vh;
+  }
+
+  @include m {
+    height: 60vh;
+  }
 
   &::-webkit-scrollbar{
     width:0;
@@ -105,7 +116,7 @@ a {
   left: 8px;
 }
 
-.font-selectors {
+#font-selectors {
   display: grid;
   grid-row-gap: 5px;
 }
@@ -120,6 +131,7 @@ a {
   -webkit-font-smoothing: antialiased !important;
   height: 28px;
   padding: 0 0 0 20px;
+  color: black;
 
   margin: 0;
   border: 0;
@@ -210,6 +222,10 @@ a {
   }
 }
 
+.max {
+  width: calc(100% - 25px);
+}
+
 input[type=range] {
   -webkit-appearance: none;
   width: 228px;
@@ -242,4 +258,216 @@ input[type=range]::-webkit-slider-thumb {
 
 input[type=range]:focus::-webkit-slider-runnable-track {
   background: #D9D9D9;
+}
+
+#opentype {
+  display: grid;
+  grid-row-gap: 9px;
+
+  .opentype-label {
+    cursor: pointer !important;
+    color: #696969;
+    transition: 0.25s;
+  }
+
+  input[type='checkbox'] {
+    height: 0;
+    width: 20px;
+    margin-bottom: 10px;
+
+    &:before {
+      content: '';
+      cursor: pointer !important;
+      display: block;
+      margin-top: -15px;
+      margin-left: -4px;
+      background: #D9D9D9;
+      box-shadow: -2px -1px 2px 0px rgba(255, 255, 255, 0.70) inset, 1px 1px 2px 0px rgba(0, 0, 0, 0.15) inset;
+      border-radius: 16px;
+      transition: 0.25s;
+      width: 20px;
+      height: 20px;
+    }
+
+    &:hover + .opentype-label {
+      color: #000;
+    }
+    
+
+    &:hover:before {
+      filter: contrast(105%);
+    }
+
+    &:checked ~ .checkmark {
+      height: 8px;
+      width: 8px;
+      display: block;
+      position: absolute;
+      margin-top: -19px;
+      margin-left: 6px;
+      background: #000;
+      border-radius: 16px;
+    }
+
+    &:checked + .opentype-label {
+      color: #000;
+    }
+  }
+}
+
+#text-samples {
+  display: grid;
+  grid-row-gap: 8px;
+
+  .text-samples-list {
+    display: grid;
+    grid-row-gap: 7px;
+
+    a {
+      color: #696969;
+      transition: 0.25s;
+
+      &:hover {
+        color: #000;
+      }
+    }
+  }
+}
+
+.toggle-text {
+  padding: 0 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 28px;
+  width: calc(100% - 44px);
+  border-radius: 12px;
+  background: #D9D9D9;
+  box-shadow: 4px 4px 2px 0px rgba(255, 255, 255, 0.70) inset, -2px -2px 2px 0px rgba(0, 0, 0, 0.15) inset;
+}
+
+button {
+  background: #BABABA;
+  font-family: inherit;
+  font-size: 17px;
+  border: 0;
+  box-shadow: 0px 4px 13px rgba(0, 0, 0, 0), inset -2px -2px 2px rgba(0, 0, 0, 0.15), inset 4px 4px 2px rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  padding: 4px 4px;
+  cursor: pointer;
+  transition: all 0.25s linear;
+  height: 30px;
+
+  &:hover {
+    filter: contrast(110%);
+    box-shadow: 0px 4px 13px rgba(0, 0, 0, 0.05), inset -2px -2px 2px rgba(0, 0, 0, 0.15), inset 4px 4px 2px rgba(255, 255, 255, 0.7);
+  }
+
+  &:focus {
+    outline: 0;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  @include xs {
+    width: 235px;
+  }
+
+  @include s {
+    width: 100%;
+  }
+}
+
+.buy-button {
+  position: fixed;
+  bottom: 25px;
+  z-index: 100;
+  width: 273px;
+  height: 80px;
+  background: linear-gradient(180deg, rgba(217, 217, 217, 0) 0%, #D9D9D9 42.19%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+
+  * {
+    color: black;
+  }
+}
+
+#spacer {
+  height: 40px;
+}
+
+.close-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 52px;
+  background: #D9D9D9;
+  box-shadow: 4px 4px 2px 0px rgba(255, 255, 255, 0.70) inset, -2px -2px 2px 0px rgba(0, 0, 0, 0.15) inset;
+
+  &:hover {
+    filter: contrast(105%);
+  }
+}
+
+.open-controls {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  bottom: 50px;
+  right: 50px;
+
+  a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.25s;
+    background: #D9D9D9;
+    border-radius: 52px;
+    width: inherit;
+    height: inherit;
+    box-shadow: 4px 4px 2px 0px rgba(255, 255, 255, 0.70) inset, -2px -2px 2px 0px rgba(0, 0, 0, 0.15) inset;
+
+    &:hover {
+      filter: contrast(105%);
+    }
+  }
+}
+
+@keyframes fadeout {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fadein {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.toggleOut {
+  animation: fadeout 500ms;
+  opacity: 0;
+}
+
+.toggleIn {
+  animation: fadein 500ms;
+  opacity: 1;
 }

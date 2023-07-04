@@ -4,6 +4,6 @@ export function Buy({slug}) {
       };
 
     return (
-        <a onClick={handleClick} target="_blank">Buy</a>
+        <button onClick={handleClick} target="_blank">Buy</button>
     )
 }
