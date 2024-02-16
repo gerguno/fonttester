@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
-import textSamplesAndInvestigationsJSON from './textSamplesAndInvestigations.json'
-import './fontTester.scss'
-import { useQueryState } from "./useQueryState"
+import textSamplesAndInvestigationsJSON from '../data/textSamplesAndInvestigations.json'
+import { useQueryState } from "../utils/useQueryState"
 import { Buy } from "./buy";
-import useWindowDimensions from "./useWindowDimensions"
+import useWindowDimensions from "../utils/useWindowDimensions"
 import { type } from "@testing-library/user-event/dist/type";
 
 let textSamplesJSON = [...textSamplesAndInvestigationsJSON.data.textSamples]
@@ -376,32 +375,35 @@ export default function FontTester({source}) {
 
   useEffect(() => {  
     // Syncing URL with typefaces[].show
-    let updatedTypefaces = typefaces.map(t => {
-      if (t.slug === f) {
-        return { ...t, selected: true };
-      }
-      return { ...t, selected: false };
-    });
-
-    // Update default selected font
-    updatedTypefaces.forEach((t, i) => {
-      if (t.selected) {
-        t.fonts.forEach((f, i) => {
-          if (i === 0) {
-            f.selected = true
-          }
-          else {
+    if (f) {
+      let updatedTypefaces = typefaces.map(t => {
+        if (t.slug === f) {
+          return { ...t, selected: true };
+        }
+        return { ...t, selected: false };
+      });
+  
+      // Update default selected font
+      updatedTypefaces.forEach((t, i) => {
+        if (t.selected) {
+          t.fonts.forEach((f, i) => {
+            if (i === 0) {
+              f.selected = true
+            }
+            else {
+              f.selected = false
+            }
+          })
+        } else {
+          t.fonts.forEach((f, i) => {
             f.selected = false
-          }
-        })
-      } else {
-        t.fonts.forEach((f, i) => {
-          f.selected = false
-        })
-      }
-    })
+          })
+        }
+      })
+  
+      setTypefaces(updatedTypefaces);
+    }
 
-    setTypefaces(updatedTypefaces);
 
     console.log('TYPEFACES (from fontTester.js)', typefaces)
   }, [])
@@ -496,7 +498,6 @@ export default function FontTester({source}) {
 
     console.log('TYPEFACES', typefaces)
   }, [typefaces]);
-  
 
   return (
     <div>
@@ -594,7 +595,7 @@ export default function FontTester({source}) {
             textTransform: app.controls.uppercase ? 'uppercase' : 'none',
             textAlign: app.controls.alignment,
             fontFeatureSettings: app.controls.fontFeatureSettings,
-          }} 
+          }}
           contenteditable="plaintext-only" 
           spellcheck="false"
         >

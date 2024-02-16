@@ -2,9 +2,17 @@
 
 html {
     -webkit-text-size-adjust: 100%;
-    // * {
-    //   color: #000;
-    // }
+}
+
+
+::-moz-selection {
+  color: white;
+  background: black;
+}
+
+::selection {
+  color: white;
+  background: black;
 }
 
 
@@ -149,7 +157,7 @@ a {
   -moz-appearance: none;
   // appearance: none;
 
-  background-image: url('../public/dropdown_arrow.svg');
+  background-image: url('../../public/dropdown_arrow.svg');
   background-repeat: no-repeat, repeat;
   background-position: right 20px top 50%, 0 0;
   transition: 0.25s;

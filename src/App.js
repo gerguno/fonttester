@@ -1,10 +1,10 @@
-import './fonts.css';
-import './fontTester.scss';
-import FontTester from './fontTester';
+import './style/fonts.css';
+import './style/fontTester.scss';
+import FontTester from './components/fontTester';
 import React, { Fragment, useEffect, useState } from "react";
 import { request } from 'graphql-request';
 import opentype from 'opentype.js';
-import Base64Binary from "./base64-binary";
+import Base64Binary from "./utils/base64-binary";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -48,7 +48,7 @@ function App() {
             }
           }
         }
-    `
+        `
       );
 
       // Load fonts to a document
