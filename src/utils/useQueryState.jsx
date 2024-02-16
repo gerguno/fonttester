@@ -3,28 +3,16 @@ import { useNavigate, useLocation } from "react-router-dom"
 
 import qs from "qs"
 
-export const useQueryState = query => {
-  const location = useLocation()
-  const history = useNavigate()
+export const useQueryState = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const setQuery = useCallback(
-    value => {
-      const existingQueries = qs.parse(location.search, {
-        ignoreQueryPrefix: true,
-      })
+  const setQueries = useCallback((newQueries) => {
+    const existingQueries = qs.parse(location.search, { ignoreQueryPrefix: true });
+    const updatedQueries = { ...existingQueries, ...newQueries };
+    const queryString = qs.stringify(updatedQueries, { skipNulls: true });
+    navigate(`${location.pathname}?${queryString}`);
+  }, [navigate, location]);
 
-      const queryString = qs.stringify(
-        { ...existingQueries, [query]: value },
-        { skipNulls: true }
-      )
-
-      history(`${location.pathname}?${queryString}`)
-    },
-    [history, location, query]
-  )
-
-  return [
-    qs.parse(location.search, { ignoreQueryPrefix: true })[query],
-    setQuery,
-  ]
-}
+  return [qs.parse(location.search, { ignoreQueryPrefix: true }), setQueries];
+};

@@ -34,7 +34,7 @@ export default function FontTester({source}) {
   })
 
   const timerRef = useRef(null);
-  const [f, setF] = useQueryState('f')
+  const [queries, setQueries] = useQueryState({ t: '', f: '' });
   const { height, width } = useWindowDimensions();
 
   const updateFontFeatures = () => {
@@ -106,18 +106,19 @@ export default function FontTester({source}) {
     }
 
     setTypefaces(updatedTypefaces);
-    setF(e.target.value)
+    setQueries({t: e.target.value, f: updatedTypefaces.find(t => t.selected)?.fonts.find(f => f.selected)?.fontTitle})
+
     // updateFontFeatures() -> moved to useEffect
   };
 
-  const handleFontChange = (event) => {
+  const handleFontChange = (e) => {
     const updatedTypefaces = typefaces.map(typeface => {
       if (typeface.selected) {
         return {
           ...typeface, 
           fonts: typeface.fonts.map(font => ({
             ...font,
-            selected: font.fontTitle === event.target.value, 
+            selected: font.fontTitle === e.target.value, 
           })),
         };
       }
@@ -125,6 +126,7 @@ export default function FontTester({source}) {
     });
   
     setTypefaces(updatedTypefaces);
+    setQueries({t: updatedTypefaces.find(t => t.selected)?.slug, f: updatedTypefaces.find(t => t.selected)?.fonts.find(f => f.selected)?.fontTitle})
     // updateFontFeatures() -> moved to useEffect
   };
 
@@ -190,7 +192,7 @@ export default function FontTester({source}) {
 
   const handleMouseOverControls = () => {
     setMarkers(prev => ({
-      ...prev,
+        ...prev,
         mouseOverControls: true
     }))
   };
@@ -254,13 +256,11 @@ export default function FontTester({source}) {
   }
 
   const toggleControls = () => {
-    setApp(prev => ({
+    setMarkers(prev => ({
       ...prev,
-      controls: {
-        ...prev.controls,
-        showControls: !prev.controls.showControls
-      }
+      showControls: !prev.showControls
     }))
+    console.log('TOGGLE CONTROLS', markers.showControls)
   }
 
   const universalControls = (
@@ -374,32 +374,24 @@ export default function FontTester({source}) {
 
   useEffect(() => {  
     // Syncing URL with typefaces[].show
-    if (f) {
-      let updatedTypefaces = typefaces.map(t => {
-        if (t.slug === f) {
-          return { ...t, selected: true };
+    if (queries.t && queries.f) {
+      let updatedTypefaces = typefaces.map(typeface => {
+        if (typeface.slug === queries.t) {
+          return { ...typeface, selected: true }
         }
-        return { ...t, selected: false };
-      });
-  
-      // Update default selected font
-      updatedTypefaces.forEach((t, i) => {
-        if (t.selected) {
-          t.fonts.forEach((f, i) => {
-            if (i === 0) {
-              f.selected = true
-            }
-            else {
-              f.selected = false
-            }
-          })
-        } else {
-          t.fonts.forEach((f, i) => {
-            f.selected = false
-          })
-        }
+        return { ...typeface, selected: false }
       })
-  
+
+      updatedTypefaces.forEach((t, i) => {
+        t.fonts.forEach((f, i) => {
+          if (f.fontTitle === queries.f) {
+            f.selected = true
+          } else {
+            f.selected = false
+          }
+        })
+      }) 
+
       setTypefaces(updatedTypefaces);
     }
 
@@ -428,11 +420,12 @@ export default function FontTester({source}) {
   }, [app.controls.verticalCenter])
 
   useEffect(() => {
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseleave', handleMouseLeave);
+    // Controls show logic
+    width > 576 && document.addEventListener('mousemove', handleMouseMove);
+    width > 576 && document.addEventListener('mouseleave', handleMouseLeave);
     width > 576 && document.addEventListener('click', handleMouseMove);
 
-    if (markers.mouseOverControls) {
+    if (width > 576 && markers.mouseOverControls) {
       setMarkers(prev => ({
         ...prev,
         showControls: true
@@ -471,7 +464,7 @@ export default function FontTester({source}) {
       document.removeEventListener('mouseleave', handleMouseLeave);
       width > 576 && document.removeEventListener('click', handleMouseMove);
     }
-  }, [markers.mouseOverControls]);
+  }, [width, markers.mouseOverControls]);
 
   useEffect(() => {
     if (app.controls.background === 'b&w') { 
