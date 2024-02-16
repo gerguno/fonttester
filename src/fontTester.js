@@ -1,149 +1,268 @@
 import React, { useEffect, useState, useRef } from "react";
 import textSamplesAndInvestigationsJSON from './textSamplesAndInvestigations.json'
 import './fontTester.scss'
-import opentype from 'opentype.js'
-import Base64Binary from "./base64-binary";
 import { useQueryState } from "./useQueryState"
 import { Buy } from "./buy";
 import useWindowDimensions from "./useWindowDimensions"
+import { type } from "@testing-library/user-event/dist/type";
 
 let textSamplesJSON = [...textSamplesAndInvestigationsJSON.data.textSamples]
-let investigationsJSON = [...textSamplesAndInvestigationsJSON.data.investigations]
 let dTJSON = textSamplesAndInvestigationsJSON.data.defaultText
 
 
-export default function FontTester({typefaces}) {
-  const [f, setF] = useQueryState('f')
-  const [typeface, setTypeface] = useState(typefaces[0])
-  const [textSamplesDATA, setTextSamplesDATA] = useState(textSamplesJSON)
-  const [investigationsDATA, setInvestigationsDATA] = useState(investigationsJSON)
-  const [textStyle, setTextStyle] = useState({})
-  const [style, setStyle] = useState(typeface.fonts[0].fontTitle.slice(typeface.fonts[0].fontTitle.indexOf(' ') + 1))
-  const [showFontStyles, setShowFontStyles] = useState(false)
-  const [fontSize, setFontSize] = useState(72);
-  const [letterSpacing, setLetterSpacing] = useState(0);
-  const [lineHeight, setLineHeight] = useState(1.2);
-  const [uppercase, setUppercase] = useState(false);
-  const [alignment, setAlignment] = useState('left');
-  const [verticalCenter, setVerticalCenter] = useState(false);
-  const [showControls, setShowControls] = useState(true); // !!!!!! -> false
-  const [mouseOverControls, setMouseOverControls] = useState(false)
-  const [selectedFeatures, setSelectedFeatures] = useState([])
-  const [background, setBackground] = useState('b&w')
-  const timerRef = useRef(null);
-  const [sampleText, setSampleText] = useState([dTJSON])
-  const [textSamplesCat, setTextSamplesCat] = useState([
-    {
-      name: 'Text samples',
-      status: 'active',
+export default function FontTester({source}) {
+  const [typefaces, setTypefaces] = useState(source);
+  const [app, setApp] = useState({
+    controls: {
+      fontSize: 144,
+      letterSpacing: 0,
+      lineHeight: 1.2,
+      uppercase: false,
+      alignment: 'left',
+      verticalCenter: false,
+      background: 'b&w',
+      fontFeatureSettings: '',
     },
-    {
-      name: 'Investigation',
-      status: 'default',
+    texts: {
+      textSamplesDATA: textSamplesJSON,
+      sampleText: [dTJSON],
     }
-  ])
+  })
 
+  const [markers, setMarkers] = useState({
+      showFontsDropdown: typefaces.find(t => t.selected)?.fonts.length > 1,
+      showControls: true,
+      mouseOverControls: false,
+  })
+
+  const timerRef = useRef(null);
+  const [f, setF] = useQueryState('f')
   const { height, width } = useWindowDimensions();
-    
-  const handleTypefaceChange = (event) => {
-    const foundT = typefaces.find(foundT => foundT.title === event.target.value);
-    setTypeface(foundT)
-    setF(foundT.slug)
-    setSelectedFeatures([])
-    let inputs = document.querySelectorAll('.otf-checkbox');
-    for (let i = 0; i < inputs.length; i++) {
-      inputs[i].checked = false;
+
+  const updateFontFeatures = () => {
+    let newFontFeatureSettings = '';
+  
+    typefaces.forEach(t => {
+      if (t.selected) {
+        t.fonts.forEach(f => {
+          if (f.selected) {
+            f.opentypeFeatures.forEach(feature => {
+              if (feature.selected) {
+                newFontFeatureSettings += `"${feature.tag}", `;
+              }
+            });
+          }
+        });
+      }
+    });
+  
+    newFontFeatureSettings = newFontFeatureSettings.replace(/, $/, '');
+  
+    setApp(prev => ({
+      ...prev,
+      controls: {
+        ...prev.controls,
+        fontFeatureSettings: newFontFeatureSettings
+      }
+    }));
+  }
+  
+  const handleTypefaceChange = (e) => {
+    // Update selected typeface
+    let updatedTypefaces = typefaces.map(t => {
+      if (t.slug === e.target.value) {
+        return { ...t, selected: true };
+      }
+      return { ...t, selected: false };
+    });
+
+    // Update default selected font
+    updatedTypefaces.forEach((t, i) => {
+      if (t.selected) {
+        t.fonts.forEach((f, i) => {
+          if (i === 0) {
+            f.selected = true
+          }
+          else {
+            f.selected = false
+          }
+        })
+      } else {
+        t.fonts.forEach((f, i) => {
+          f.selected = false
+        })
+      }
+    })
+
+    // Show font styles dropdown if there are more than one font styles
+    if (updatedTypefaces.find(t => t.selected)?.fonts.length > 1) {
+      setMarkers(prev => ({
+        ...prev,
+        showFontsDropdown: true
+      }))
+    } else {
+      setMarkers(prev => ({
+        ...prev,
+        showFontsDropdown: false
+      }))
     }
+
+    setTypefaces(updatedTypefaces);
+    setF(e.target.value)
+    // updateFontFeatures() -> moved to useEffect
   };
 
-  const handleStyleChange = (event) => {
-    setStyle(event.target.value);
+  const handleFontChange = (event) => {
+    const updatedTypefaces = typefaces.map(typeface => {
+      if (typeface.selected) {
+        return {
+          ...typeface, 
+          fonts: typeface.fonts.map(font => ({
+            ...font,
+            selected: font.fontTitle === event.target.value, 
+          })),
+        };
+      }
+      return typeface; 
+    });
+  
+    setTypefaces(updatedTypefaces);
+    // updateFontFeatures() -> moved to useEffect
   };
 
   const handleFontSizeChange = (event) => {
-    setFontSize(parseInt(event.target.value));
+    setApp(prev => ({
+      ...prev,
+      controls: {
+        ...prev.controls,
+        fontSize: event.target.value
+      }
+    }))
   };
 
   const handleLetterSpacingChange = (event) => {
-    setLetterSpacing(parseFloat(event.target.value));
+    setApp(prev => ({
+      ...prev,
+      controls: {
+        ...prev.controls,
+        letterSpacing: event.target.value
+      }
+    }))
   };
 
   const handleLineHeightChange = (event) => {
-    setLineHeight(parseFloat(event.target.value));
+    setApp(prev => ({
+      ...prev,
+      controls: {
+        ...prev.controls,
+        lineHeight: event.target.value
+      }
+    }))
   };
 
   const handleUppercaseChange = () => {
-    setUppercase(!uppercase);
+    setApp(prev => ({
+      ...prev,
+      controls: {
+        ...prev.controls,
+        uppercase: !prev.controls.uppercase
+      }
+    }))
   };
 
   const handleAlignment = () => {
-    alignment === 'left' ? setAlignment('center') : setAlignment('left')
+    setApp(prev => ({
+      ...prev,
+      controls: {
+        ...prev.controls,
+        alignment: prev.controls. alignment === 'left' ? 'center' : 'left'
+      }
+    }))
   };
 
   const handleVerticalCenter = () => {
-    setVerticalCenter(!verticalCenter);
+    setApp(prev => ({
+      ...prev,
+      controls: {
+        ...prev.controls,
+        verticalCenter: !prev.controls.verticalCenter
+      }
+    }))
   };
 
   const handleMouseOverControls = () => {
-    setMouseOverControls(true);
+    setMarkers(prev => ({
+      ...prev,
+        mouseOverControls: true
+    }))
   };
 
   const handleMouseLeaveControls = () => {
-    setMouseOverControls(false);
+    setMarkers(prev => ({
+      ...prev,
+        mouseOverControls: false
+    }))
   };
 
-  const handleCheckboxChange = (event) => {
-    const item = event.target.value;
-    const isChecked = event.target.checked;
-    if (isChecked) {
-      setSelectedFeatures([...selectedFeatures, item]);
-    } else {
-      setSelectedFeatures(selectedFeatures.filter((value) => value !== item));
-    }
-  }
+  const handleOpentypeFeatureChange = (event) => {
+    const updatedTypefaces = typefaces.map(typeface => {
+      if (typeface.selected) {
+        return {
+          ...typeface, 
+          fonts: typeface.fonts.map(font => {
+            if (font.selected) {
+              return {
+                ...font,
+                opentypeFeatures: font.opentypeFeatures.map(feature => {
+                  if (feature.tag === event.target.value) {
+                    return {
+                      ...feature,
+                      selected: !feature.selected
+                    }
+                  }
+                  return feature;
+                })
+              }
+            }
+            return font;
+          })
+        }
+      }
+      return typeface; 
+    });
+  
+    setTypefaces(updatedTypefaces); 
+    updateFontFeatures()
+}
 
   const handleBackground = () => {
-    if (background === 'b&w') { 
-      setBackground('w&b') 
-    }
-    else if (background === 'w&b') {
-      setBackground('img') 
-    } 
-    else if (background === 'img') {
-      setBackground('b&w')
-    } 
-  }
-
-  const handleTextSamplesCat = () => {
-    (textSamplesCat[0].status === "active") 
-      ? setTextSamplesCat([
-        {
-          name: 'Text samples',
-          status: 'default'
-        },
-        {
-          name: 'Investigation',
-          status: 'active'
-        }
-      ])
-      : setTextSamplesCat([
-        {
-          name: 'Text samples',
-          status: 'active'
-        },
-        {
-          name: 'Investigation',
-          status: 'default'
-        }
-      ])
+    setApp(prev => ({
+      ...prev,
+      controls: {
+        ...prev.controls,
+        background: prev.controls.background === 'b&w' ? 'w&b' : prev.controls.background === 'w&b' ? 'img' : 'b&w'
+      }
+    }))
   }
 
   const handleChangeText = (text) => {
-    setSampleText(text)
+    setApp(prev => ({
+      ...prev,
+      texts: {
+        ...prev.texts,
+        sampleText: text
+      }
+    }))
   }
 
   const toggleControls = () => {
-    (showControls === true) ? setShowControls(false) : setShowControls(true)
+    setApp(prev => ({
+      ...prev,
+      controls: {
+        ...prev.controls,
+        showControls: !prev.controls.showControls
+      }
+    }))
   }
 
   const universalControls = (
@@ -155,11 +274,11 @@ export default function FontTester({typefaces}) {
                 type="range"
                 min="10"
                 max="800"
-                value={fontSize}
+                value={app.controls.fontSize}
                 onChange={handleFontSizeChange}
             />
             </label>
-            <span>{fontSize}</span>
+            <span>{app.controls.fontSize}</span>
         </div>
         <div>
             <label>
@@ -168,11 +287,11 @@ export default function FontTester({typefaces}) {
                 min="-0.1"
                 max="0.1"
                 step="0.01"
-                value={letterSpacing}
+                value={app.controls.letterSpacing}
                 onChange={handleLetterSpacingChange}
             />
             </label>
-            <span>{Math.floor(letterSpacing*100)}</span>
+            <span>{Math.floor(app.controls.letterSpacing*100)}</span>
         </div>
         <div>
             <label>
@@ -181,17 +300,17 @@ export default function FontTester({typefaces}) {
                 min="0.7"
                 max="1.7"
                 step="0.01"
-                value={lineHeight}
+                value={app.controls.lineHeight}
                 onChange={handleLineHeightChange}
             />
             </label>
-            <span>{lineHeight}</span>
+            <span>{app.controls.lineHeight}</span>
         </div>
       </div>
       <div id="font-toggles">
         <div className="font-toggles-basic">
           <a className="toggle" onClick={handleUppercaseChange}>
-            {uppercase 
+            {app.controls.uppercase 
               ? 
                 <>
                   <img src="./case-lowercase-default.png"/>
@@ -205,7 +324,7 @@ export default function FontTester({typefaces}) {
             }
           </a>
           <a className="toggle" onClick={handleAlignment}>
-            {alignment === 'left'
+            {app.controls.alignment === 'left'
               ? 
                 <>
                   <img src="./align-left-active.png"/>
@@ -219,7 +338,7 @@ export default function FontTester({typefaces}) {
             }
           </a>
           <a className="toggle" onClick={handleVerticalCenter}>
-            {verticalCenter
+            {app.controls.verticalCenter
               ? 
                 <>
                   <img src="./vcenter-left-default.png"/>
@@ -234,129 +353,150 @@ export default function FontTester({typefaces}) {
           </a>
         </div>
         <a className="toggle-background" onClick={handleBackground}>
-          {background === "b&w" && <img src="b&w.png"/>}
-          {background === "w&b" && <img src="w&b.png"/>}
-          {background === "img" && <img src="img.png"/>}
+          {app.controls.background === "b&w" && <img src="b&w.png"/>}
+          {app.controls.background === "w&b" && <img src="w&b.png"/>}
+          {app.controls.background === "img" && <img src="img.png"/>}
         </a>
       </div>
   </>)
 
   const textSamples = (
     <div id="text-samples">
-      <div class="text-samples-selector">
-        <a className="toggle-text max" onClick={handleTextSamplesCat}>
-          <span className={(textSamplesCat[0].status === "default") ? "grey-text" : ""}>{textSamplesCat[0].name}</span>&nbsp;
-          <span className={(textSamplesCat[1].status === "default") ? "grey-text" : ""}>{textSamplesCat[1].name}</span>
-        </a>
+      <div className="opentype-caption">
+        Text samples
       </div>
       <div className="text-samples-list">
-        {(textSamplesCat[0].status === "active") 
-          ? 
-            textSamplesDATA.map(ts => {
+            {app.texts.textSamplesDATA.map(ts => {
               return (
                 <a onClick={() => handleChangeText(ts.text)} dangerouslySetInnerHTML={{ __html: ts.name }}/>
-            )})
-          : 
-            investigationsDATA.map(inv => {
-              return (
-                <a onClick={() => handleChangeText(inv.text)}>{inv.name}</a>
-            )})
-        }
+            )})}
       </div>
-  
     </div>
   )
 
-  useEffect(() => {
-    console.log(typefaces)
-
-    for (const t of typefaces) {
+  useEffect(() => {  
+    // Syncing URL with typefaces[].show
+    let updatedTypefaces = typefaces.map(t => {
       if (t.slug === f) {
-        setTypeface(t);
-        break;
+        return { ...t, selected: true };
       }
-    }
+      return { ...t, selected: false };
+    });
+
+    // Update default selected font
+    updatedTypefaces.forEach((t, i) => {
+      if (t.selected) {
+        t.fonts.forEach((f, i) => {
+          if (i === 0) {
+            f.selected = true
+          }
+          else {
+            f.selected = false
+          }
+        })
+      } else {
+        t.fonts.forEach((f, i) => {
+          f.selected = false
+        })
+      }
+    })
+
+    setTypefaces(updatedTypefaces);
+
+    console.log('TYPEFACES (from fontTester.js)', typefaces)
   }, [])
 
   useEffect(() => {
-    // Check styles if more than 1
-    (typeface.fonts.length > 1) ? setShowFontStyles(true) : setShowFontStyles(false)
-
-    // Change default style
-    setStyle(typeface.fonts[0].fontTitle.slice(typeface.fonts[0].fontTitle.indexOf(' ') + 1))
-  }, [typeface])
+    app.controls.verticalCenter 
+      ? 
+        setApp(prev => ({
+          ...prev,
+          controls: {
+            ...prev.controls,
+            alignment: 'center'
+          }
+        }))
+      :
+        setApp(prev => ({
+          ...prev,
+          controls: {
+            ...prev.controls,
+            alignment: 'left'
+          }
+        }))
+  }, [app.controls.verticalCenter])
 
   useEffect(() => {
-    verticalCenter && setAlignment('center')
-    !verticalCenter && setAlignment('left')
-  }, [verticalCenter])
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseleave', handleMouseLeave);
+    width > 576 && document.addEventListener('click', handleMouseMove);
 
-  // useEffect(() => {
-  //   // Showing controls on mouse move & when hovering
-  //   document.addEventListener('mousemove', handleMouseMove);
-  //   document.addEventListener('mouseleave', handleMouseLeave);
-  //   document.addEventListener('click', handleMouseMove);
+    if (markers.mouseOverControls) {
+      setMarkers(prev => ({
+        ...prev,
+        showControls: true
+      }))
+      clearTimeout(timerRef.current);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseleave', handleMouseLeave);
+      width > 576 && document.removeEventListener('click', handleMouseMove);
+    }
 
-  //   if (mouseOverControls) {
-  //     setShowControls(true);
-  //     clearTimeout(timerRef.current);
-  //     document.removeEventListener('mousemove', handleMouseMove);
-  //     document.removeEventListener('mouseleave', handleMouseLeave);
-  //     document.removeEventListener('click', handleMouseMove);
-  //   }
+    function handleMouseMove() {
+      setMarkers(prev => ({
+        ...prev,
+        showControls: true
+      }))
+      clearTimeout(timerRef.current);
 
-  //   function handleMouseMove() {
-  //     setShowControls(true);
-  //     clearTimeout(timerRef.current);
-  //     timerRef.current = setTimeout(() => {
-  //       setShowControls(false);
-  //     }, 750); // 1 second delay before hiding the component
-  //   }
+      timerRef.current = setTimeout(() => {
+        setMarkers(prev => ({
+          ...prev,
+          showControls: false
+        }))
+      }, 750);
+    }
 
-  //   function handleMouseLeave() {
-  //     clearTimeout(timerRef.current);
-  //     setShowControls(false);
-  //   }
+    function handleMouseLeave() {
+      clearTimeout(timerRef.current);
+      setMarkers(prev => ({
+        ...prev,
+        showControls: false
+      }))
+    }
     
-  //   return () => {
-  //     document.removeEventListener('mousemove', handleMouseMove);
-  //     document.removeEventListener('mouseleave', handleMouseLeave);
-  //     document.removeEventListener('click', handleMouseMove);
-  //   };
-  //   setShowControls(true);
-  // }, [mouseOverControls]);
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseleave', handleMouseLeave);
+      width > 576 && document.removeEventListener('click', handleMouseMove);
+    }
+  }, [markers.mouseOverControls]);
 
   useEffect(() => {
-    if (background === 'b&w') { 
+    if (app.controls.background === 'b&w') { 
       document.body.style.background = 'white' 
       document.body.style.color = 'black' 
     }
-    else if (background === 'w&b') {
+    else if (app.controls.background === 'w&b') {
       document.body.style.background = 'black'
       document.body.style.color = 'white'
       document.querySelector('.controls').style.color = 'black'
     } 
-    else if (background === 'img') {
+    else if (app.controls.background === 'img') {
       document.body.style.background = 'url(kvas-people.jpg)'
       document.body.style.backgroundSize = 'cover'
       document.body.style.backgroundRepeat = 'no-repeat'
       document.body.style.backgroundPosition = '50% 50%'
       document.body.style.backgroundAttachment = 'fixed'
     } 
-  }, [background])
+  }, [app.controls.background])
 
   useEffect(() => {
-    setTextStyle({
-      fontFamily: `${typeface.title} ${style}`,
-      fontSize: `${fontSize}px`,
-      letterSpacing: `${letterSpacing}em`,
-      lineHeight: lineHeight,
-      textTransform: `${uppercase ? `uppercase` : `none`}`,
-      textAlign: `${alignment}`,
-      fontFeatureSettings: selectedFeatures.map((s) => `"${s}"`).join(', ')
-    })
+    updateFontFeatures()
 
-  }, [typeface,  style, fontSize, letterSpacing, lineHeight, uppercase, alignment, verticalCenter, selectedFeatures])
+    console.log('TYPEFACES', typefaces)
+  }, [typefaces]);
+  
 
   return (
     <div>
@@ -367,80 +507,98 @@ export default function FontTester({typefaces}) {
           </a>
         </div>
       }
-        <div className={`controls ${showControls ? `toggleIn` : `toggleOut`}`}
-            onMouseEnter={handleMouseOverControls} 
-            onMouseLeave={handleMouseLeaveControls}
+        <div 
+          className={`controls ${markers.showControls ? `toggleIn` : `toggleOut`}`}
+          onMouseEnter={handleMouseOverControls} 
+          onMouseLeave={handleMouseLeaveControls}
         >
-        {/* <div id="controls"
-            onMouseEnter={handleMouseOverControls} 
-            onMouseLeave={handleMouseLeaveControls}
-            style={{
-            display: `${showControls ? `block` : `none`}`,
-        }}> */}
             <div className="title">
               KTF typesetter V 1.0
             </div>
             <div id="controls-container">
               <div id="font-selectors">
                   <label>
-                  <select className="dropdown" value={typeface.title} onChange={handleTypefaceChange}>
-                      {typefaces.map((t, id) => (
-                          <option key={id} value={t.title}>{t.title}</option>
-                      ))}
-                  </select>
+                    <select 
+                      className="dropdown" 
+                      value={typefaces.find(t => t.selected)?.slug || ''}
+                      onChange={handleTypefaceChange}
+                    >
+                        {typefaces.map((t, id) => (
+                            <option key={id} value={t.slug}>{t.title}</option>
+                        ))}
+                    </select>
                   </label>
-                  {showFontStyles ? (
-                      <label>
-                        <select className="dropdown" value={style} onChange={handleStyleChange}>
-                            {typeface.fonts.map((f, id) => (
-                                <option key={id} value={`${f.fontTitle.slice(f.fontTitle.indexOf(' ') + 1)}`}>{f.fontTitle.slice(f.fontTitle.indexOf(' ') + 1)}</option>
-                            ))}
-                        </select>
-                      </label>
-                    ) : <></>}
+                  {markers.showFontsDropdown && 
+                    <label>
+                      <select 
+                        className="dropdown"
+                        value={typefaces.find(t => t.selected)?.fonts.find(f => f.selected)?.fontTitle || ''} 
+                        onChange={handleFontChange}
+                      >
+                        {typefaces.find(t => t.selected)?.fonts.map((f, id) => (
+                            <option key={id} value={f.fontTitle}>{f.fontTitle.slice(f.fontTitle.indexOf(' ') + 1)}</option>
+                        ))}
+                      </select>
+                    </label>
+                  }
             </div>
             {universalControls}
-            {
-              typeface.opentypeFeatures ? (
-                <div id="opentype">
-                  <div className="opentype-caption">
-                    Opentype features
-                  </div>
-                  <div className="opentype-checkboxes">
-                    {typeface.opentypeFeatures.map((opf, id) => (
-                        <label key={id}>
-                          <input type="checkbox" className="otf-checkbox" value={opf.tag} onChange={handleCheckboxChange}/>
-                           <span className="opentype-label">{opf.tag} {(opf.name) && opf.name} <br/></span> 
-                          <span class="checkmark"></span>
-                        </label>
-                    ))}
-                  </div>
+            {<div id="opentype">
+                <div className="opentype-caption">
+                  Opentype features
                 </div>
-              ) : <></> 
-            }
+                <div className="opentype-checkboxes">
+                  {typefaces.find(t => t.selected).fonts.find(f => f.selected).opentypeFeatures.map((opf, id) => (
+                      <label key={id}>
+                        <input 
+                          type="checkbox" 
+                          className="otf-checkbox" 
+                          value={opf.tag} 
+                          checked={opf.selected}
+                          onChange={handleOpentypeFeatureChange}
+                        />
+                          <span className="opentype-label"> {opf.tag} {opf.name && opf.name} <br/></span>
+                          <span className="checkmark"></span>
+                      </label>
+                    ))
+                  }
+                </div>
+            </div>}
             {textSamples}
             <div id="spacer"></div>
 
             <div className="buy-button"> 
-              <Buy slug={typeface.slug}/>
+              <Buy slug={typefaces.find(t => t.selected)?.slug || ''}/>
               {width < 576 &&
                 <a class="close-controls" onClick={toggleControls}>
                   <img src="close.png" witdh="10px" height="10px"/>
                 </a> 
               }
             </div>
-            
           </div>      
       </div>
 
       <div id="typefield-container" style={{
-        display: `${verticalCenter ? `flex` : `block`}`,
-        alignItems: `${verticalCenter ? `center` : `initial`}`,
-        justifyContent: `${verticalCenter ? `center` : `initial`}`,
+        display: `${app.controls.verticalCenter ? `flex` : `block`}`,
+        alignItems: `${app.controls.verticalCenter ? `center` : `initial`}`,
+        justifyContent: `${app.controls.verticalCenter ? `center` : `initial`}`,
         minHeight: '90vh'
       }}>
-        <div id="textfield" style={textStyle} contenteditable="plaintext-only">
-            {sampleText}
+        <div 
+          id="textfield" 
+          style={{
+            fontFamily: `${typefaces.find(t => t.selected)?.title || ''} ${typefaces.find(t => t.selected)?.fonts.find(f => f.selected)?.fontTitle.slice(typefaces.find(t => t.selected)?.fonts.find(f => f.selected)?.fontTitle.indexOf(' ') + 1 || 0) || ''}`,
+            fontSize: `${app.controls.fontSize}px`,
+            letterSpacing: `${app.controls.letterSpacing}em`,
+            lineHeight: app.controls.lineHeight,
+            textTransform: app.controls.uppercase ? 'uppercase' : 'none',
+            textAlign: app.controls.alignment,
+            fontFeatureSettings: app.controls.fontFeatureSettings,
+          }} 
+          contenteditable="plaintext-only" 
+          spellcheck="false"
+        >
+            {app.texts.sampleText}
         </div>
       </div>
 
