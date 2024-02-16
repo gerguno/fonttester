@@ -364,9 +364,9 @@ export default function FontTester({source}) {
         Text samples
       </div>
       <div className="text-samples-list">
-            {app.texts.textSamplesDATA.map(ts => {
+            {app.texts.textSamplesDATA.map((ts, i) => {
               return (
-                <a onClick={() => handleChangeText(ts.text)} dangerouslySetInnerHTML={{ __html: ts.name }}/>
+                <a key={i} onClick={() => handleChangeText(ts.text)} dangerouslySetInnerHTML={{ __html: ts.name }}/>
             )})}
       </div>
     </div>
@@ -567,7 +567,7 @@ export default function FontTester({source}) {
                 downloadLink={typefaces.find(t => t.selected && !t.buy)?.downloadLink}
               />
               {width < 576 &&
-                <a class="close-controls" onClick={toggleControls}>
+                <a className="close-controls" onClick={toggleControls}>
                   <img src="close.png" witdh="10px" height="10px"/>
                 </a> 
               }
@@ -592,8 +592,8 @@ export default function FontTester({source}) {
             textAlign: app.controls.alignment,
             fontFeatureSettings: app.controls.fontFeatureSettings,
           }}
-          contenteditable="plaintext-only" 
-          spellcheck="false"
+          contentEditable="plaintext-only"
+          spellCheck="false"
         >
             {app.texts.sampleText}
         </div>

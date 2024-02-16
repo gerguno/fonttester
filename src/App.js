@@ -12,28 +12,29 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [typefaces, setTypefaces] = useState(null);
 
-  // Fetch images 
+  const imgs = ['kvas-people.jpg', 'b&w.png', 'w&b.png', 'img.png'];
+
+  // Preload images 
   // https://jackskylord.medium.com/how-to-preload-images-into-cache-in-react-js-ff1642708240
-  const cacheImages = async (srcArray) => {
+  const preloadImages = async (srcArray) => {
     const promises = await srcArray.map((src) => {
       return new Promise(function (resolve, reject) {
-        const img = new Image();
-
-        img.src = src;
-        img.onload = resolve();
-        img.onerror = reject();
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = (err) => reject(err);
+        image.src = src;
       });
     });
-    await Promise.all(promises);
-    setIsLoading(false);
+    await Promise.all(promises).then((images) => {
+      setIsLoading(false);
+      console.log('Images loaded:', images);
+    }).catch((err) => {
+      console.log('Failed to load images:', err);
+    })
   };
 
   useEffect(() => {
-    // Cache images
-    const imgs = [
-      'kvas-people.jpg'
-    ];
-    cacheImages(imgs);
+    preloadImages(imgs);
 
     // Fetch fonts
     const fetchFonts = async () => {
