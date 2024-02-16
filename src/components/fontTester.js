@@ -8,7 +8,6 @@ import { type } from "@testing-library/user-event/dist/type";
 let textSamplesJSON = [...textSamplesAndInvestigationsJSON.data.textSamples]
 let dTJSON = textSamplesAndInvestigationsJSON.data.defaultText
 
-
 export default function FontTester({source}) {
   const [typefaces, setTypefaces] = useState(source);
   const [app, setApp] = useState({
@@ -569,7 +568,11 @@ export default function FontTester({source}) {
             <div id="spacer"></div>
 
             <div className="buy-button"> 
-              <Buy slug={typefaces.find(t => t.selected)?.slug || ''}/>
+              <Buy 
+                slug={typefaces.find(t => t.selected)?.slug || ''} 
+                buy={typefaces.find(t => t.selected)?.buy} 
+                downloadLink={typefaces.find(t => t.selected && !t.buy)?.downloadLink}
+              />
               {width < 576 &&
                 <a class="close-controls" onClick={toggleControls}>
                   <img src="close.png" witdh="10px" height="10px"/>

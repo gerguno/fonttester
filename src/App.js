@@ -5,6 +5,8 @@ import React, { Fragment, useEffect, useState } from "react";
 import { request } from 'graphql-request';
 import opentype from 'opentype.js';
 import Base64Binary from "./utils/base64-binary";
+import { customTypefaces } from './data/customTypefaces';
+import { type } from '@testing-library/user-event/dist/type';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -35,13 +37,14 @@ function App() {
 
     // Fetch fonts
     const fetchFonts = async () => {
-      const { typefaces } = await request(
+      let { typefaces } = await request(
         'https://api-eu-central-1.graphcms.com/v2/ckipww3t7jgqt01z11xzlhmwi/master',
         `
         {
-          typefaces {
+          typefaces(orderBy: id_DESC) {
             title
             slug
+            buy
             fonts {
               fontTitle
               base64
@@ -50,6 +53,9 @@ function App() {
         }
         `
       );
+
+      // Add custom typefaces
+      typefaces = [...customTypefaces, ...typefaces];
 
       // Load fonts to a document
       typefaces.map((t) => {
@@ -119,6 +125,8 @@ function App() {
           } 
           
         });
+
+        // Finally, set the state
         setTypefaces(typefaces);
         console.log('TYPEFACES (from App):', typefaces);
       });
