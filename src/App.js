@@ -1,18 +1,42 @@
 import './style/fonts.css';
 import './style/fontTester.scss';
 import FontTester from './components/fontTester';
-import React, { Fragment, useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { request } from 'graphql-request';
-import opentype from 'opentype.js';
+import opentype, { load } from 'opentype.js';
 import Base64Binary from "./utils/base64-binary";
 import { customTypefaces } from './data/customTypefaces';
-import { type } from '@testing-library/user-event/dist/type';
+import gsap from 'gsap';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [typefaces, setTypefaces] = useState(null);
+  
+  const loaderRef = useRef();
+  const mainRef = useRef();
 
   const imgs = ['kvas-people.jpg', 'b&w.png', 'w&b.png', 'img.png'];
+
+  useEffect(() => {
+    if (isLoading) {
+      gsap.to(loaderRef.current, { 
+        duration: 1, 
+        autoAlpha: 1,
+    })
+    
+    } else {
+      gsap.to(loaderRef.current, { 
+        duration: 1, 
+        autoAlpha: 0, 
+        onComplete: () => {
+          loaderRef.current.style.display = 'none' 
+          gsap.to(mainRef.current, {
+            duration: 1,
+            autoAlpha: 1
+          })
+        }})
+    }
+  }, [isLoading])
 
   // Preload images 
   // https://jackskylord.medium.com/how-to-preload-images-into-cache-in-react-js-ff1642708240
@@ -141,11 +165,12 @@ function App() {
     <div className='App'>
       {isLoading || !typefaces
         ? 
-          <div className="lds-circle"><div></div></div>
+          <div ref={loaderRef} className="loader" style={{ opacity: 0 }}></div>
         :
-          <div className='main-page-content'>
+          <main ref={mainRef} style={{ opacity: 0 }}>
             <FontTester source={typefaces}/>
-          </div>
+            <section className="background"></section>
+          </main>
       }
     </div>
     

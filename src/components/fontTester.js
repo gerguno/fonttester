@@ -12,7 +12,7 @@ export default function FontTester({source}) {
   const [typefaces, setTypefaces] = useState(source);
   const [app, setApp] = useState({
     controls: {
-      fontSize: 144,
+      fontSize: window.innerWidth > 768 ? 120 : 36,
       letterSpacing: 0,
       lineHeight: 1.2,
       uppercase: false,
@@ -468,20 +468,19 @@ export default function FontTester({source}) {
 
   useEffect(() => {
     if (app.controls.background === 'b&w') { 
-      document.body.style.background = 'white' 
-      document.body.style.color = 'black' 
+      document.querySelector('.background').style.background = 'white' 
+      document.querySelector('#typefield-container').style.color = 'black' 
     }
     else if (app.controls.background === 'w&b') {
-      document.body.style.background = 'black'
-      document.body.style.color = 'white'
-      document.querySelector('.controls').style.color = 'black'
+      document.querySelector('.background').style.background = 'black'
+      document.querySelector('#typefield-container').style.color = 'white'
     } 
     else if (app.controls.background === 'img') {
-      document.body.style.background = 'url(kvas-people.jpg)'
-      document.body.style.backgroundSize = 'cover'
-      document.body.style.backgroundRepeat = 'no-repeat'
-      document.body.style.backgroundPosition = '50% 50%'
-      document.body.style.backgroundAttachment = 'fixed'
+      document.querySelector('.background').style.background = 'url(kvas-people.jpg)'
+      document.querySelector('.background').style.backgroundSize = 'cover'
+      document.querySelector('.background').style.backgroundRepeat = 'no-repeat'
+      document.querySelector('.background').style.backgroundPosition = '50% 50%'
+      document.querySelector('.background').style.backgroundAttachment = 'fixed'
     } 
   }, [app.controls.background])
 
@@ -492,7 +491,7 @@ export default function FontTester({source}) {
   }, [typefaces]);
 
   return (
-    <div>
+    <section className="tester">
       {width < 576 &&
         <div className="open-controls">
           <a onClick={toggleControls}>
@@ -599,6 +598,6 @@ export default function FontTester({source}) {
         </div>
       </div>
 
-    </div>
+    </section>
   );
 }
