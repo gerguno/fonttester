@@ -574,7 +574,11 @@ export default function FontTester({source}) {
         display: `${app.controls.verticalCenter ? `flex` : `block`}`,
         alignItems: `${app.controls.verticalCenter ? `center` : `initial`}`,
         justifyContent: `${app.controls.verticalCenter ? `center` : `initial`}`,
-        minHeight: '90vh'
+        minHeight: '90vh',
+        width: '100%',
+        position: 'absolute',
+        zIndex: 1,
+        top: 0,
       }}>
         <div 
           id="textfield" 
