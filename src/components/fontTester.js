@@ -3,7 +3,7 @@ import textSamplesAndInvestigationsJSON from '../data/textSamplesAndInvestigatio
 import { useQueryState } from "../utils/useQueryState"
 import { Buy } from "./buy";
 import useWindowDimensions from "../utils/useWindowDimensions"
-import { type } from "@testing-library/user-event/dist/type";
+import gsap from "gsap";
 
 let textSamplesJSON = [...textSamplesAndInvestigationsJSON.data.textSamples]
 let dTJSON = textSamplesAndInvestigationsJSON.data.defaultText
@@ -468,19 +468,15 @@ export default function FontTester({source}) {
 
   useEffect(() => {
     if (app.controls.background === 'b&w') { 
-      document.querySelector('.background').style.background = 'white' 
-      document.querySelector('#typefield-container').style.color = 'black' 
+      gsap.to(document.querySelector('.background-colors'), { background: 'white', duration: 1 })
+      gsap.to(document.querySelector('#typefield-container'), { color: 'black', duration: 1 })
     }
     else if (app.controls.background === 'w&b') {
-      document.querySelector('.background').style.background = 'black'
-      document.querySelector('#typefield-container').style.color = 'white'
+      gsap.to(document.querySelector('.background-colors'), { background: 'black', duration: 1 })
+      gsap.to(document.querySelector('#typefield-container'), { color: 'white', duration: 1 })
     } 
     else if (app.controls.background === 'img') {
-      document.querySelector('.background').style.background = 'url(kvas-people.jpg)'
-      document.querySelector('.background').style.backgroundSize = 'cover'
-      document.querySelector('.background').style.backgroundRepeat = 'no-repeat'
-      document.querySelector('.background').style.backgroundPosition = '50% 50%'
-      document.querySelector('.background').style.backgroundAttachment = 'fixed'
+      gsap.to(document.querySelector('.background-colors'), { background: 'transparent', duration: 1 })
     } 
   }, [app.controls.background])
 

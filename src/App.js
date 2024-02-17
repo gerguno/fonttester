@@ -163,13 +163,15 @@ function App() {
 
   return (
     <div className='App'>
-      {isLoading || !typefaces
-        ? 
-          <div ref={loaderRef} className="loader" style={{ opacity: 0 }}></div>
-        :
+      <div ref={loaderRef} className="loader" style={{ opacity: 0 }}></div>
+      {typefaces
+        &&
           <main ref={mainRef} style={{ opacity: 0 }}>
             <FontTester source={typefaces}/>
-            <section className="background"></section>
+            <section className="background">
+              <div className="background-colors"></div>
+              <div className="background-image"></div>
+            </section>
           </main>
       }
     </div>
